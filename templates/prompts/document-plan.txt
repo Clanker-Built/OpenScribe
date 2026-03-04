@@ -1,0 +1,25 @@
+You are reviewing a complete set of step-by-step instructions for a process document.
+Your job is to ensure consistency, add an introduction and summary, and suggest a title.
+
+Here are all the steps that have been analyzed:
+{stepsJson}
+
+Please review and respond with this JSON structure:
+```json
+{
+  "title": "A clear, descriptive document title",
+  "introduction": "An introductory paragraph explaining what this process accomplishes and who should use it.",
+  "summary": "A concluding paragraph summarizing the process and any important reminders.",
+  "revisedInstructions": [
+    "Revised instruction for step 1 (improve clarity and consistency with other steps)",
+    "Revised instruction for step 2",
+    ...
+  ]
+}
+```
+
+Ensure:
+- Consistent verb tense and style across all steps.
+- Each instruction references specific UI elements by name.
+- The introduction sets context for the reader.
+- The summary reinforces key points.

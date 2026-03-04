@@ -1,0 +1,27 @@
+Analyze this screenshot and user action to generate a step instruction.
+
+**Step Number:** {stepNumber}
+**Click Location:** ({clickX}, {clickY}) — {clickType}
+**Window Title:** {windowTitle}
+**Application:** {applicationName}
+**Control Name:** {controlName}
+**OCR Text Near Click:** {ocrText}
+**Voice Narration:** {voiceTranscript}
+**Previous Step:** {previousStepContext}
+
+Based on the screenshot and the click location, write a clear instruction for this step.
+
+Respond with this exact JSON structure:
+```json
+{
+  "stepTitle": "Short action title (e.g., 'Click the Submit button')",
+  "instruction": "Detailed instruction paragraph for the end user. Be specific about what to click, where to find it, and what will happen.",
+  "highlightRegion": {
+    "x": <int: x coordinate of top-left of highlight box>,
+    "y": <int: y coordinate of top-left of highlight box>,
+    "width": <int: width of highlight box>,
+    "height": <int: height of highlight box>
+  },
+  "notes": "Optional tip, warning, or additional context (or null if none)"
+}
+```

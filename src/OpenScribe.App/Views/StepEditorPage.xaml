@@ -1,0 +1,53 @@
+<Page
+    x:Class="OpenScribe.App.Views.StepEditorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Edit Step" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Text="{x:Bind ViewModel.Step.AiGeneratedTitle, Mode=OneWay, FallbackValue='Select a step to edit'}"
+                       Style="{StaticResource SubtitleTextBlockStyle}" Opacity="0.7" />
+        </StackPanel>
+
+        <!-- Editor -->
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="16" MaxWidth="800">
+                <!-- Screenshot preview -->
+                <TextBlock Text="Screenshot" FontWeight="SemiBold" />
+                <Border Height="300" CornerRadius="8"
+                        Background="{ThemeResource SystemFillColorNeutralBrush}">
+                    <Image x:Name="StepScreenshot" Stretch="Uniform" />
+                </Border>
+
+                <!-- Instruction -->
+                <TextBlock Text="Instruction" FontWeight="SemiBold" />
+                <TextBox Text="{x:Bind ViewModel.Instruction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True" TextWrapping="Wrap" MinHeight="120"
+                         PlaceholderText="Enter the step instruction..." />
+
+                <!-- Notes -->
+                <TextBlock Text="Notes" FontWeight="SemiBold" />
+                <TextBox Text="{x:Bind ViewModel.Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80"
+                         PlaceholderText="Optional notes or tips..." />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Actions -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12" Margin="0,16,0,0">
+            <Button Content="Save" Style="{StaticResource AccentButtonStyle}"
+                    Command="{x:Bind ViewModel.SaveCommand}" />
+            <Button Content="Revert to AI" Command="{x:Bind ViewModel.RevertToAICommand}" />
+            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                       VerticalAlignment="Center" Opacity="0.7" Margin="16,0,0,0" />
+        </StackPanel>
+    </Grid>
+</Page>

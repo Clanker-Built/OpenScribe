@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenScribe.Capture</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <Description>Screen, input, and audio capture engine for OpenScribe</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="SharpAvi" Version="3.0.1" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.10" />
+  </ItemGroup>
+
+  <!-- Resolve WPF namespace conflicts (System.Windows.Shapes.Path vs System.IO.Path) -->
+  <ItemGroup>
+    <Using Include="System.IO.Path" Alias="Path" />
+    <Using Include="System.IO.Directory" Alias="Directory" />
+    <Using Include="System.IO.File" Alias="File" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenScribe.Core\OpenScribe.Core.csproj" />
+  </ItemGroup>
+
+</Project>

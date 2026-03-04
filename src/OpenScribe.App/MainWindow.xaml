@@ -1,0 +1,30 @@
+<Window
+    x:Class="OpenScribe.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <NavigationView
+            x:Name="NavView"
+            IsBackButtonVisible="Collapsed"
+            PaneDisplayMode="Left"
+            OpenPaneLength="220"
+            Loaded="NavigationView_Loaded"
+            SelectionChanged="NavigationView_SelectionChanged"
+            IsSettingsVisible="True">
+
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Dashboard" Tag="Dashboard" Icon="Home" />
+                <NavigationViewItem Content="Capture" Tag="Capture" Icon="Video" />
+                <NavigationViewItem Content="Review" Tag="Review" Icon="Edit" />
+            </NavigationView.MenuItems>
+
+            <NavigationView.Header>
+                <TextBlock Text="OpenScribe" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,0" />
+            </NavigationView.Header>
+
+            <Frame x:Name="ContentFrame" />
+
+        </NavigationView>
+    </Grid>
+</Window>

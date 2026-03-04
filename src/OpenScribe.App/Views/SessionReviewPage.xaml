@@ -1,0 +1,132 @@
+<Page
+    x:Class="OpenScribe.App.Views.SessionReviewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:OpenScribe.Core.Models">
+
+    <Grid Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Review Session" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                       Style="{StaticResource SubtitleTextBlockStyle}" Opacity="0.7" />
+        </StackPanel>
+
+        <!-- Actions + Document Ready Panel -->
+        <StackPanel Grid.Row="1" Spacing="12" Margin="0,0,0,16">
+            <!-- Process with AI row -->
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Content="Process with AI"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.ProcessWithAICommand}" />
+                <ProgressRing IsActive="{x:Bind ViewModel.IsProcessing, Mode=OneWay}"
+                              Width="24" Height="24" VerticalAlignment="Center" />
+                <TextBlock Text="{x:Bind ViewModel.ProgressMessage, Mode=OneWay}"
+                           VerticalAlignment="Center" Opacity="0.7" />
+            </StackPanel>
+
+            <!-- Document Ready panel -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8" Padding="16"
+                    Visibility="{x:Bind ViewModel.IsDocumentReady, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE73E;" Foreground="{StaticResource OpenScribeSuccessBrush}" FontSize="18"
+                                  VerticalAlignment="Center" />
+                        <TextBlock Text="Document Ready" FontWeight="SemiBold" FontSize="15"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock Text="{x:Bind ViewModel.GeneratedDocumentPath, Mode=OneWay}"
+                               Opacity="0.6" FontSize="12" IsTextSelectionEnabled="True"
+                               TextWrapping="Wrap" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Command="{x:Bind ViewModel.OpenDocumentCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE8A5;" FontSize="14" />
+                                <TextBlock Text="Open in Word" />
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{x:Bind ViewModel.OpenDocumentFolderCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE838;" FontSize="14" />
+                                <TextBlock Text="Open Folder" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Steps List -->
+        <ListView Grid.Row="3"
+                  x:Name="StepsList"
+                  ItemsSource="{x:Bind ViewModel.Steps, Mode=OneWay}"
+                  SelectedItem="{x:Bind ViewModel.SelectedStep, Mode=TwoWay}"
+                  SelectionMode="Single">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:ProcessStep">
+                    <Grid Padding="12" Margin="0,4" CornerRadius="8"
+                          Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                          Opacity="{x:Bind IsExcluded, Mode=OneWay, Converter={StaticResource ExcludedOpacity}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Step Number -->
+                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18"
+                                Background="{StaticResource OpenScribeAccentBrush}">
+                            <TextBlock Text="{x:Bind SequenceNumber}" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontWeight="Bold" />
+                        </Border>
+
+                        <!-- Thumbnail placeholder -->
+                        <Border Grid.Column="1" Width="64" Height="48" CornerRadius="4"
+                                Background="{ThemeResource SystemFillColorNeutralBrush}" Margin="8,0" />
+
+                        <!-- Step Details -->
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                            <TextBlock Text="{x:Bind AiGeneratedTitle, Mode=OneWay, FallbackValue='(Not analyzed)'}"
+                                       FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{x:Bind EffectiveInstruction, Mode=OneWay}"
+                                       TextTrimming="CharacterEllipsis" MaxLines="2" Opacity="0.7" FontSize="12" />
+                            <TextBlock Opacity="0.5" FontSize="11">
+                                <Run Text="{x:Bind WindowTitle}" /> — <Run Text="{x:Bind ApplicationName}" />
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Actions -->
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <Button Content="&#xE74D;" FontFamily="Segoe MDL2 Assets" ToolTipService.ToolTip="Remove step"
+                                    Tag="{x:Bind Id}" Click="RemoveStep_Click" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Status Bar -->
+        <Grid Grid.Row="4" Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+            <ProgressBar Grid.Column="1" Width="200" Value="{x:Bind ViewModel.ProgressValue, Mode=OneWay}"
+                         Visibility="{x:Bind ViewModel.IsProcessing, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+        </Grid>
+    </Grid>
+</Page>

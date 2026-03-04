@@ -1,0 +1,76 @@
+<Page
+    x:Class="OpenScribe.App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="24" MaxWidth="700">
+
+            <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,8" />
+
+            <!-- AI Provider Settings -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="AI Provider" FontWeight="SemiBold" FontSize="18" />
+                <ComboBox Header="Provider" ItemsSource="{x:Bind ViewModel.ProviderOptions}"
+                          SelectedIndex="{x:Bind ViewModel.SelectedProviderIndex, Mode=TwoWay}" Width="300" />
+
+                <!-- OpenAI fields -->
+                <TextBox Header="API Key" Text="{x:Bind ViewModel.ApiKey, Mode=TwoWay}"
+                         PlaceholderText="sk-..."
+                         Visibility="{x:Bind ViewModel.IsOpenAI, Mode=OneWay}" />
+                <TextBox Header="Model" Text="{x:Bind ViewModel.DeploymentName, Mode=TwoWay}"
+                         PlaceholderText="gpt-5.2"
+                         Visibility="{x:Bind ViewModel.IsOpenAI, Mode=OneWay}" />
+
+                <!-- Azure OpenAI fields -->
+                <TextBox Header="Endpoint URL" Text="{x:Bind ViewModel.AzureEndpoint, Mode=TwoWay}"
+                         PlaceholderText="https://your-resource.openai.azure.com/"
+                         Visibility="{x:Bind ViewModel.IsAzureOpenAI, Mode=OneWay}" />
+                <TextBox Header="Deployment Name" Text="{x:Bind ViewModel.DeploymentName, Mode=TwoWay}"
+                         PlaceholderText="gpt-5.2"
+                         Visibility="{x:Bind ViewModel.IsAzureOpenAI, Mode=OneWay}" />
+                <CheckBox Content="Use Entra ID authentication (recommended)"
+                          IsChecked="{x:Bind ViewModel.UseEntraIdAuth, Mode=TwoWay}"
+                          Visibility="{x:Bind ViewModel.IsAzureOpenAI, Mode=OneWay}" />
+                <TextBox Header="API Key (if not using Entra ID)" Text="{x:Bind ViewModel.ApiKey, Mode=TwoWay}"
+                         Visibility="{x:Bind ViewModel.IsAzureOpenAI, Mode=OneWay}" />
+
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button Content="Test Connection" Command="{x:Bind ViewModel.TestAzureConnectionCommand}" />
+                    <ProgressRing IsActive="{x:Bind ViewModel.IsTestingConnection, Mode=OneWay}" Width="20" Height="20" VerticalAlignment="Center" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Azure Speech Settings -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="Azure Speech (Voice Transcription)" FontWeight="SemiBold" FontSize="18" />
+                <TextBox Header="Subscription Key" Text="{x:Bind ViewModel.SpeechKey, Mode=TwoWay}" />
+                <TextBox Header="Region" Text="{x:Bind ViewModel.SpeechRegion, Mode=TwoWay}" PlaceholderText="eastus" />
+                <TextBox Header="Language" Text="{x:Bind ViewModel.SpeechLanguage, Mode=TwoWay}" PlaceholderText="en-US" />
+            </StackPanel>
+
+            <!-- General Settings -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="General" FontWeight="SemiBold" FontSize="18" />
+                <TextBox Header="Organization Name" Text="{x:Bind ViewModel.OrganizationName, Mode=TwoWay}" />
+                <TextBox Header="Default Author" Text="{x:Bind ViewModel.DefaultAuthor, Mode=TwoWay}" />
+                <NumberBox Header="Crop Region Size (px)" Value="{x:Bind ViewModel.CropRegionSize, Mode=TwoWay}" Minimum="100" Maximum="1000" SpinButtonPlacementMode="Inline" />
+                <NumberBox Header="Click Debounce (ms)" Value="{x:Bind ViewModel.ClickDebounceMs, Mode=TwoWay}" Minimum="100" Maximum="2000" SpinButtonPlacementMode="Inline" />
+                <CheckBox Content="Record audio by default" IsChecked="{x:Bind ViewModel.RecordAudioByDefault, Mode=TwoWay}" />
+            </StackPanel>
+
+            <!-- Save -->
+            <Button Content="Save Settings"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command="{x:Bind ViewModel.SaveSettingsCommand}" />
+
+            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" Opacity="0.7" />
+
+            <!-- About -->
+            <StackPanel Spacing="4" Margin="0,16,0,0">
+                <TextBlock Text="About" FontWeight="SemiBold" FontSize="18" />
+                <TextBlock Text="{x:Bind ViewModel.AppVersion}" Opacity="0.6" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

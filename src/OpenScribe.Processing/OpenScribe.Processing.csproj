@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OpenScribe.Processing</RootNamespace>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Description>Frame extraction, OCR, transcription, and timeline processing</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.41.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenScribe.Core\OpenScribe.Core.csproj" />
+  </ItemGroup>
+
+</Project>

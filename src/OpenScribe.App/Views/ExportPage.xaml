@@ -1,0 +1,56 @@
+<Page
+    x:Class="OpenScribe.App.Views.ExportPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:OpenScribe.Core.Models"
+    Loaded="Page_Loaded">
+
+    <Grid Padding="24" MaxWidth="800">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Export Document" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,24" />
+
+        <StackPanel Grid.Row="1" Spacing="16">
+            <!-- Session Selection -->
+            <ComboBox Header="Select Session"
+                      ItemsSource="{x:Bind ViewModel.AvailableSessions, Mode=OneWay}"
+                      SelectedItem="{x:Bind ViewModel.SelectedSession, Mode=TwoWay}"
+                      DisplayMemberPath="Name"
+                      HorizontalAlignment="Stretch" />
+
+            <!-- Output Path -->
+            <TextBox Header="Output File Path"
+                     PlaceholderText="Leave blank for default (My Documents)"
+                     Text="{x:Bind ViewModel.OutputPath, Mode=TwoWay}" />
+
+            <!-- Options -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="Options" FontWeight="SemiBold" />
+                <CheckBox Content="Include screenshots" IsChecked="{x:Bind ViewModel.IncludeScreenshots, Mode=TwoWay}" />
+                <CheckBox Content="Use annotated screenshots (with highlights)" IsChecked="{x:Bind ViewModel.UseAnnotatedScreenshots, Mode=TwoWay}" />
+                <CheckBox Content="Include notes and tips" IsChecked="{x:Bind ViewModel.IncludeNotes, Mode=TwoWay}" />
+            </StackPanel>
+
+            <!-- Branding -->
+            <TextBox Header="Organization Name" Text="{x:Bind ViewModel.OrganizationName, Mode=TwoWay}" />
+            <TextBox Header="Author Name" Text="{x:Bind ViewModel.AuthorName, Mode=TwoWay}" />
+
+            <!-- Export Button -->
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Content="Generate Document"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.ExportCommand}" />
+                <ProgressRing IsActive="{x:Bind ViewModel.IsExporting, Mode=OneWay}" Width="24" Height="24" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <ProgressBar Value="{x:Bind ViewModel.ProgressValue, Mode=OneWay}"
+                         Visibility="{x:Bind ViewModel.IsExporting, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="2" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" Margin="0,8,0,0" />
+    </Grid>
+</Page>

@@ -1,0 +1,29 @@
+<Application
+    x:Class="OpenScribe.App.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:OpenScribe.App.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Value Converters -->
+            <converters:BoolNegationConverter x:Key="BoolNegation" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+            <converters:ExcludedOpacityConverter x:Key="ExcludedOpacity" />
+
+            <!-- App-wide color palette -->
+            <Color x:Key="OpenScribePrimary">#1F3864</Color>
+            <Color x:Key="OpenScribeAccent">#4472C4</Color>
+            <Color x:Key="OpenScribeSuccess">#548235</Color>
+            <Color x:Key="OpenScribeDanger">#C00000</Color>
+
+            <SolidColorBrush x:Key="OpenScribePrimaryBrush" Color="{StaticResource OpenScribePrimary}" />
+            <SolidColorBrush x:Key="OpenScribeAccentBrush" Color="{StaticResource OpenScribeAccent}" />
+            <SolidColorBrush x:Key="OpenScribeSuccessBrush" Color="{StaticResource OpenScribeSuccess}" />
+            <SolidColorBrush x:Key="OpenScribeDangerBrush" Color="{StaticResource OpenScribeDanger}" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
