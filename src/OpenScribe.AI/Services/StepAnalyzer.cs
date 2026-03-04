@@ -160,8 +160,8 @@ public class StepAnalyzer
 
     /// <summary>
     /// Resolve the best highlight region using a three-tier fallback:
-    /// 1. AI-returned highlight (validated)
-    /// 2. UIA element bounds
+    /// 1. UIA element bounds (most precise — from the accessibility tree)
+    /// 2. AI-returned highlight (vision-estimated — can be inaccurate)
     /// 3. Click-centered box (200px)
     /// </summary>
     private HighlightRegion ResolveHighlightRegion(HighlightRegion? aiHighlight, RawStep step)
@@ -169,15 +169,7 @@ public class StepAnalyzer
         var imgW = step.ScreenshotWidth > 0 ? step.ScreenshotWidth : 1920;
         var imgH = step.ScreenshotHeight > 0 ? step.ScreenshotHeight : 1080;
 
-        // Tier 1: Use AI-returned highlight if valid
-        if (IsValidHighlight(aiHighlight, step, imgW, imgH))
-        {
-            _logger.LogDebug("Step {Seq}: Using AI highlight ({X},{Y} {W}x{H})",
-                step.SequenceNumber, aiHighlight!.X, aiHighlight.Y, aiHighlight.Width, aiHighlight.Height);
-            return aiHighlight;
-        }
-
-        // Tier 2: UIA element bounds
+        // Tier 1: UIA element bounds (preferred — precise coordinates from accessibility tree)
         if (!string.IsNullOrEmpty(step.Click.UiaElementBounds))
         {
             try
@@ -203,8 +195,17 @@ public class StepAnalyzer
             }
             catch
             {
-                // Fall through to click-based fallback
+                // Fall through to AI highlight
             }
+        }
+
+        // Tier 2: AI-returned highlight (vision-estimated — less reliable but covers
+        // cases where UIA bounds are unavailable, e.g., web app overlays)
+        if (IsValidHighlight(aiHighlight, step, imgW, imgH))
+        {
+            _logger.LogDebug("Step {Seq}: Using AI highlight ({X},{Y} {W}x{H})",
+                step.SequenceNumber, aiHighlight!.X, aiHighlight.Y, aiHighlight.Width, aiHighlight.Height);
+            return aiHighlight;
         }
 
         // Tier 3: Click-centered box (200px)

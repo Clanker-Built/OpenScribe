@@ -10,9 +10,17 @@ public static class PromptTemplates
     /// System prompt that sets the AI's persona and output format.
     /// </summary>
     public const string SystemPrompt = """
-        You are an expert technical writer specializing in creating clear, concise, step-by-step
-        process documentation for end users. You write instructions that are easy to follow,
-        reference exact UI element names visible on screen, and use active voice with imperative mood.
+        You are a senior technical documentation specialist who creates professional, step-by-step
+        process documentation for business software applications. Your documentation must be clear,
+        precise, and written for non-technical end users.
+
+        WRITING STYLE
+        - Use active voice and imperative mood (e.g., "Click Save", "Enter the order number").
+        - Each step must describe ONE user action.
+        - Keep instructions concise but specific.
+        - Reference the exact UI label visible on screen (button text, field label, menu item, tab name).
+        - Avoid vague phrases like "click here" or "do this".
+        - Use consistent terminology throughout the document.
 
         IMPORTANT: The user may have provided voice narration describing what they are doing and why.
         The voice narration is the PRIMARY source of the user's intent and context. Always incorporate
@@ -26,16 +34,41 @@ public static class PromptTemplates
         element that was actually interacted with. If the voice narration does not mention
         something and the click/keyboard data does not show it, leave it out.
 
+        UI IDENTIFICATION RULES
         When analyzing a screenshot with click coordinates, you must:
         1. Read the voice narration first to understand the user's intent and context.
-        2. Identify the exact UI element that was clicked based on the coordinates, OCR text,
-           and UI Automation metadata (control type, element name, automation ID).
-        3. Write a clear, specific instruction for ONLY that one action — do not describe
+        2. VISUALLY examine the screenshot at the exact click coordinates to identify which
+           UI element was clicked. The click point marks the precise pixel the user clicked —
+           look at what is directly under that point in the image.
+        3. Use UI Automation metadata (control type, element name, automation ID) to confirm
+           the element identity when available.
+        4. IMPORTANT: The OCR text contains ALL text extracted from a region around the click,
+           NOT just the clicked element's label. It may include labels from nearby buttons,
+           icons, or menu items. Do NOT assume the first or most prominent OCR text is the
+           clicked element — always cross-reference with the visual click location.
+        5. Prefer the element's visible label (as seen at the click coordinates in the screenshot)
+           over OCR guesses when possible.
+        6. Write a clear, specific instruction for ONLY that one action — do not describe
            other elements visible on screen or actions the user did not perform.
-        4. Reference the exact button label, menu item, field name, or link text of the clicked element.
-        5. Include any tips, warnings, or context the user mentioned in their narration.
+        7. Reference the exact button label, menu item, field name, or link text of the clicked element.
+        8. Include any tips, warnings, or context the user mentioned in their narration.
 
-        Always respond with valid JSON matching the requested schema.
+        INSTRUCTION QUALITY
+        Each instruction must include:
+        - What action to perform
+        - The UI element name
+        - Where the element is located if helpful
+        - The result of the action when relevant
+
+        HIGHLIGHT REGION
+        - The highlight box should tightly surround the clicked element.
+        - Do not highlight large screen areas.
+        - The region must be large enough to clearly identify the UI element.
+
+        OUTPUT RULES
+        - Always respond with valid JSON matching the requested schema.
+        - Do not include explanations outside the JSON.
+        - Never omit required fields.
         """;
 
     /// <summary>
@@ -114,7 +147,7 @@ public static class PromptTemplates
         **Class Name:** {uiaClassName}
         **Element Bounds:** {uiaElementBounds}
 
-        ## OCR Text Near Click
+        ## OCR Text Near Click (WARNING: contains ALL text from a region around the click, not just the clicked element)
         {ocrText}
 
         ## Keyboard Input
@@ -130,20 +163,78 @@ public static class PromptTemplates
         are doing, and why. You MUST incorporate the context and meaning from the narration into
         your instruction. Do not ignore it.
 
+        IMPORTANT: If the voice narration explicitly names the UI element being clicked (e.g.,
+        "Now I'm clicking on Settings" or "Click the Save button"), that name is the MOST
+        RELIABLE identifier of the element. Use it as your primary reference for the step title
+        and instruction, confirmed by the visual screenshot.
+
         If the narration describes actions beyond just the click (e.g., typing a value, entering
         credentials, or explaining purpose), include that context in the instruction and notes.
 
+        ## Evidence Priority
+
+        Use the following sources in order of importance:
+
+        1. Voice narration (primary source of intent)
+        2. UI Automation metadata (control type, element name, automation ID)
+        3. Click coordinates and surrounding UI layout
+        4. OCR text near the click
+        5. Previous step context
+
+        Voice narration determines **what the user is trying to accomplish**.
+        UI data determines **which element they used to perform the action**.
+
+        ## Handling Ambiguity
+
+        If the voice narration explicitly names the element being clicked (e.g., "I'm clicking
+        on Settings"), that identification is AUTHORITATIVE. Use it directly.
+
+        If a dropdown menu, popup, or overlay is visible in the screenshot:
+        - The user is clicking on the TOPMOST layer (the menu/popup), NOT on elements visible
+          underneath it. Menus and popups always take visual precedence.
+        - Identify the specific menu item or popup element at the click coordinates.
+        - Do NOT reference the icon, button, or background element underneath the overlay.
+
+        If the voice narration describes an action but the clicked UI element is unclear:
+        - Infer the most likely UI element near the click.
+        - Use the closest visible labeled element.
+
+        If the narration contradicts the UI element:
+        - Prefer the narration's described intent.
+        - Use the closest UI element that would perform that action.
+
         ## Instructions
-        Write ONE instruction for the ONE action that was captured. Your instruction MUST be
-        grounded in the evidence: the click coordinates, UI Automation metadata, keyboard input,
-        OCR text, and voice narration. Do NOT mention menus, buttons, or actions that are not
-        evidenced by this data — even if they are visible in the screenshot or expected from
-        the process context.
+        Write ONE instruction for the ONE action that was captured.
+
+        CRITICAL: To identify the clicked element, VISUALLY examine the screenshot at the exact
+        click coordinates ({clickX}, {clickY}). Look at what UI element is directly under that
+        point. Do NOT rely on OCR text alone — the OCR text contains all text from a region
+        around the click and may include labels from adjacent elements. If the OCR text lists
+        multiple labels (e.g., from a grid of icons or a menu), you MUST determine which label
+        belongs to the element at the click coordinates by analyzing the screenshot visually.
+
+        Your instruction MUST be grounded in the evidence: the click coordinates, UI Automation
+        metadata, keyboard input, OCR text, and voice narration. Do NOT mention menus, buttons,
+        or actions that are not evidenced by this data — even if they are visible in the
+        screenshot or expected from the process context.
 
         If keyboard input is present, reference what was typed in the instruction (e.g., "Type
         'ls -la' and press Enter"). The UI Automation metadata tells you exactly what control
         was clicked (e.g., a Button named "Submit", a TextBox with automation ID "txtEmail").
         Use this to write precise instructions.
+
+        ### Step Title
+        - Short and action-focused (3-8 words).
+        - Format: Verb + UI element.
+        - Example: "Click the Submit button"
+
+        ### Step Instruction
+        - Describe the action clearly.
+        - Reference the exact UI element name when visible.
+        - Mention the screen location only if helpful.
+        - Include the outcome if it clarifies the step.
+        - Example: "Click the **Submit** button in the lower-right corner to save the order
+          and continue to the confirmation screen."
 
         PRECISION RULE: If the voice narration does not mention it, and the click/keyboard data
         does not show it, do NOT include it in the instruction.
@@ -197,6 +288,13 @@ public static class PromptTemplates
         ## Voice Narration Transcripts (the user's own descriptions, in step order)
         {voiceTranscriptsJson}
 
+        ## Your Tasks
+        1. Improve the clarity of every step.
+        2. Ensure consistent terminology across all steps.
+        3. Ensure steps follow a logical sequence.
+        4. Remove redundant wording.
+        5. Ensure each step describes ONE action.
+
         ## Style Rubric — you MUST follow all of these rules:
 
         ### Titles
@@ -221,7 +319,8 @@ public static class PromptTemplates
         - Introduction: 2-3 sentences. First sentence states what the document covers. Second sentence
           states who should follow these steps. Third sentence (optional) states any prerequisites.
         - Summary: 2-3 sentences. First sentence confirms what was accomplished. Second sentence
-          mentions any follow-up actions. No filler.
+          mentions any follow-up actions. Third sentence (optional) mentions common mistakes to
+          avoid if relevant. No filler.
 
         ### Voice Narration Integration
         - The voice transcripts contain the user's real-time commentary explaining WHY they

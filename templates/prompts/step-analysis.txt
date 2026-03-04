@@ -1,27 +1,141 @@
 Analyze this screenshot and user action to generate a step instruction.
 
+## Process Context (background reference only — do NOT use to generate instructions)
+{processContext}
+
+This is background context about the overall process. Use it ONLY to understand which part
+of the UI is relevant to this step. Do NOT describe actions, menus, buttons, or clicks
+that are not directly evidenced by the click coordinates, UI Automation metadata, keyboard
+input, or voice narration below. Your instruction must describe ONLY the single action
+that was actually captured — nothing more.
+
+## Action Metadata
 **Step Number:** {stepNumber}
-**Click Location:** ({clickX}, {clickY}) — {clickType}
+**Click Location:** ({clickX}, {clickY}) on a {imageWidth}x{imageHeight} screenshot — {clickType}
 **Window Title:** {windowTitle}
 **Application:** {applicationName}
-**Control Name:** {controlName}
-**OCR Text Near Click:** {ocrText}
-**Voice Narration:** {voiceTranscript}
-**Previous Step:** {previousStepContext}
 
-Based on the screenshot and the click location, write a clear instruction for this step.
+## UI Automation Context
+**Control Type:** {uiaControlType}
+**Element Name:** {uiaElementName}
+**Automation ID:** {uiaAutomationId}
+**Class Name:** {uiaClassName}
+**Element Bounds:** {uiaElementBounds}
+
+## OCR Text Near Click (WARNING: contains ALL text from a region around the click, not just the clicked element)
+{ocrText}
+
+## Keyboard Input
+{typedText}
+
+## Previous Step
+{previousStepContext}
+
+## Voice Narration (PRIMARY SOURCE — the user's own description of this action)
+{voiceTranscript}
+
+The voice narration is the user speaking in real time. It describes their intent, what they
+are doing, and why. You MUST incorporate the context and meaning from the narration into
+your instruction. Do not ignore it.
+
+IMPORTANT: If the voice narration explicitly names the UI element being clicked (e.g.,
+"Now I'm clicking on Settings" or "Click the Save button"), that name is the MOST
+RELIABLE identifier of the element. Use it as your primary reference for the step title
+and instruction, confirmed by the visual screenshot.
+
+If the narration describes actions beyond just the click (e.g., typing a value, entering
+credentials, or explaining purpose), include that context in the instruction and notes.
+
+## Evidence Priority
+
+Use the following sources in order of importance:
+
+1. Voice narration (primary source of intent)
+2. UI Automation metadata (control type, element name, automation ID)
+3. Click coordinates and surrounding UI layout
+4. OCR text near the click
+5. Previous step context
+
+Voice narration determines **what the user is trying to accomplish**.
+UI data determines **which element they used to perform the action**.
+
+## Handling Ambiguity
+
+If the voice narration explicitly names the element being clicked (e.g., "I'm clicking
+on Settings"), that identification is AUTHORITATIVE. Use it directly.
+
+If a dropdown menu, popup, or overlay is visible in the screenshot:
+- The user is clicking on the TOPMOST layer (the menu/popup), NOT on elements visible
+  underneath it. Menus and popups always take visual precedence.
+- Identify the specific menu item or popup element at the click coordinates.
+- Do NOT reference the icon, button, or background element underneath the overlay.
+
+If the voice narration describes an action but the clicked UI element is unclear:
+- Infer the most likely UI element near the click.
+- Use the closest visible labeled element.
+
+If the narration contradicts the UI element:
+- Prefer the narration's described intent.
+- Use the closest UI element that would perform that action.
+
+## Instructions
+Write ONE instruction for the ONE action that was captured.
+
+CRITICAL: To identify the clicked element, VISUALLY examine the screenshot at the exact
+click coordinates ({clickX}, {clickY}). Look at what UI element is directly under that
+point. Do NOT rely on OCR text alone — the OCR text contains all text from a region
+around the click and may include labels from adjacent elements. If the OCR text lists
+multiple labels (e.g., from a grid of icons or a menu), you MUST determine which label
+belongs to the element at the click coordinates by analyzing the screenshot visually.
+
+Your instruction MUST be grounded in the evidence: the click coordinates, UI Automation
+metadata, keyboard input, OCR text, and voice narration. Do NOT mention menus, buttons,
+or actions that are not evidenced by this data — even if they are visible in the
+screenshot or expected from the process context.
+
+If keyboard input is present, reference what was typed in the instruction (e.g., "Type
+'ls -la' and press Enter"). The UI Automation metadata tells you exactly what control
+was clicked (e.g., a Button named "Submit", a TextBox with automation ID "txtEmail").
+Use this to write precise instructions.
+
+### Step Title
+- Short and action-focused (3-8 words).
+- Format: Verb + UI element.
+- Example: "Click the Submit button"
+
+### Step Instruction
+- Describe the action clearly.
+- Reference the exact UI element name when visible.
+- Mention the screen location only if helpful.
+- Include the outcome if it clarifies the step.
+- Example: "Click the **Submit** button in the lower-right corner to save the order
+  and continue to the confirmation screen."
+
+PRECISION RULE: If the voice narration does not mention it, and the click/keyboard data
+does not show it, do NOT include it in the instruction.
+
+You MUST also return a highlightRegion that tightly bounds the clicked UI element.
+Use the click coordinates ({clickX}, {clickY}) and the image dimensions ({imageWidth}x{imageHeight})
+to estimate a bounding box around the element that was clicked. Add ~4-8 pixels of padding on each side.
+Use UI Automation element bounds if available, but prefer your own visual analysis of the screenshot
+to determine the actual rendered bounds of the element. If you cannot confidently determine the
+element bounds, return null for highlightRegion.
+
+You MUST also return a cropRegion that bounds the area of the screenshot a reader needs to see
+to understand this step. This should include the clicked element plus any relevant context:
+dropdown menus that appeared, form sections, dialog boxes, navigation panels, or settings groups.
+The cropRegion should be larger than the highlightRegion — typically 400-1000px in each dimension.
+If a popup or menu is visible, the cropRegion MUST include it even if it's far from the click point.
+The cropRegion does NOT need to be centered on the click — it should be centered on the most
+relevant content area for this step.
 
 Respond with this exact JSON structure:
 ```json
 {
   "stepTitle": "Short action title (e.g., 'Click the Submit button')",
-  "instruction": "Detailed instruction paragraph for the end user. Be specific about what to click, where to find it, and what will happen.",
-  "highlightRegion": {
-    "x": <int: x coordinate of top-left of highlight box>,
-    "y": <int: y coordinate of top-left of highlight box>,
-    "width": <int: width of highlight box>,
-    "height": <int: height of highlight box>
-  },
-  "notes": "Optional tip, warning, or additional context (or null if none)"
+  "instruction": "Detailed instruction paragraph for the end user. Be specific about what to click, where to find it, and what will happen. Incorporate the user's narrated context and intent.",
+  "notes": "Include any tips, warnings, or additional context from the voice narration (or null if none)",
+  "highlightRegion": { "x": 100, "y": 200, "width": 150, "height": 40 },
+  "cropRegion": { "x": 50, "y": 150, "width": 800, "height": 500 }
 }
 ```
