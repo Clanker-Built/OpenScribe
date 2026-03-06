@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenScribe.AI.Services;
 using OpenScribe.Core.Configuration;
 using OpenScribe.Core.Interfaces;
 
@@ -91,16 +92,30 @@ public partial class SettingsViewModel : ObservableObject
             IsTestingConnection = true;
             StatusMessage = "Testing connection...";
 
-            var copilotClient = _serviceProvider.GetRequiredService<ICopilotClient>();
-            var success = await copilotClient.TestConnectionAsync();
+            // Build a temporary client with the CURRENT form values so the user
+            // doesn't have to save + restart before testing.
+            var testSettings = new AzureOpenAISettings
+            {
+                Provider = SelectedProviderIndex == 0 ? "OpenAI" : "AzureOpenAI",
+                Endpoint = AzureEndpoint,
+                DeploymentName = DeploymentName,
+                ApiKey = ApiKey,
+                UseEntraIdAuth = UseEntraIdAuth
+            };
+
+            var tempClient = new CopilotClient(
+                _serviceProvider.GetRequiredService<ILogger<CopilotClient>>(),
+                Options.Create(testSettings));
+
+            var success = await tempClient.TestConnectionAsync();
             StatusMessage = success
                 ? "Connection successful!"
-                : "Connection failed. Check your settings.";
+                : "Connection failed. AI returned an empty response.";
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Connection test failed");
-            StatusMessage = $"Error: {ex.Message}";
+            StatusMessage = $"Connection failed: {ex.Message}";
         }
         finally
         {

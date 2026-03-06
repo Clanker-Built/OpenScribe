@@ -351,21 +351,13 @@ public class CopilotClient : ICopilotClient
 
     public async Task<bool> TestConnectionAsync(CancellationToken ct = default)
     {
-        try
+        var messages = new List<ChatMessage>
         {
-            var messages = new List<ChatMessage>
-            {
-                new UserChatMessage("Reply with exactly: OK")
-            };
+            new UserChatMessage("Reply with exactly: OK")
+        };
 
-            var response = await GetChatClient().CompleteChatAsync(messages, cancellationToken: ct);
-            return response.Value.Content.Count > 0;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Azure OpenAI connection test failed");
-            return false;
-        }
+        var response = await GetChatClient().CompleteChatAsync(messages, cancellationToken: ct);
+        return response.Value.Content.Count > 0;
     }
 
     /// <summary>
